@@ -247,6 +247,7 @@
   </footer>
 </main>
 
+<script>window.QUOTELOOP_SIGNUP_API="https://quoteloop-signups.jrkenneyjr.workers.dev/signup";</script>
 <script>
 (function(){
   "use strict";
@@ -458,19 +459,45 @@
     flash($("ics"), "Downloaded ✓");
   }
 
-  // Early-access capture: store locally so nothing is lost, confirm honestly.
+  // Signup API — set SIGNUP_API_URL at deploy time (see artifacts/build/signup-endpoint.txt)
+  var SIGNUP_API = window.QUOTELOOP_SIGNUP_API || "";
+
   function earlyAccess(e){
     e.preventDefault();
     var email = $("eaEmail").value.trim();
     if(!email) return;
-    try{
-      var key = "quoteloop_leads";
-      var arr = JSON.parse(localStorage.getItem(key) || "[]");
-      arr.push({ email: email, at: new Date().toISOString() });
-      localStorage.setItem(key, JSON.stringify(arr));
-    }catch(err){ /* private mode — still confirm */ }
-    $("eaForm").style.display = "none";
-    $("eaDone").classList.add("show");
+    var variant = (new URLSearchParams(location.search).get("v") || "a");
+    var payload = { email: email, variant: variant, source: "mvp", utm: location.search || null };
+
+    function showDone(){
+      $("eaForm").style.display = "none";
+      $("eaDone").classList.add("show");
+    }
+
+    if(!SIGNUP_API){
+      try{
+        var key = "quoteloop_leads";
+        var arr = JSON.parse(localStorage.getItem(key) || "[]");
+        arr.push({ email: email, at: new Date().toISOString(), variant: variant });
+        localStorage.setItem(key, JSON.stringify(arr));
+      }catch(err){}
+      showDone();
+      return;
+    }
+
+    fetch(SIGNUP_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+      .then(function(res){
+        if(res.ok && res.j && res.j.ok !== false) showDone();
+        else throw new Error((res.j && res.j.error) || "signup failed");
+      })
+      .catch(function(){
+        $("eaDone").textContent = "Could not save — try again or email us from the site footer.";
+        $("eaDone").classList.add("show");
+      });
   }
 
   // Default the date to today for convenience.
