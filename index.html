@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QuoteLoop — never let an estimate go cold</title>
+<meta name="description" content="For solo trades and home-service pros: enter an estimate and get a ready-to-send, scheduled follow-up sequence (SMS + email) in seconds. Free." />
+<meta property="og:title" content="QuoteLoop — never let an estimate go cold" />
+<meta property="og:description" content="Enter an estimate, get a scheduled SMS + email follow-up sequence you can send in seconds." />
+<meta property="og:type" content="website" />
+<style>
+  :root{
+    --ink:#10202b;
+    --ink-2:#33444f;
+    --paper:#f6f4ef;
+    --card:#ffffff;
+    --line:#e3ddd2;
+    --brand:#0d3b66;
+    --brand-2:#12568f;
+    --accent:#f4711f;
+    --accent-ink:#9c3d00;
+    --ok:#1f7a4d;
+    --shadow:0 1px 2px rgba(16,32,43,.06),0 12px 30px rgba(16,32,43,.08);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 500px at 80% -10%, #eaf1f8 0%, rgba(234,241,248,0) 60%),
+      var(--paper);
+    line-height:1.55;
+  }
+  .wrap{max-width:1060px;margin:0 auto;padding:0 20px}
+  a{color:var(--brand-2)}
+  header.site{padding:22px 0 6px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:-.02em;font-size:20px;color:var(--ink)}
+  .logo{
+    width:34px;height:34px;border-radius:9px;flex:0 0 auto;
+    background:linear-gradient(135deg,var(--brand) 0%,var(--brand-2) 100%);
+    position:relative;box-shadow:var(--shadow)
+  }
+  .logo::after{
+    content:"";position:absolute;inset:0;border-radius:9px;
+    background:
+      radial-gradient(circle at 30% 32%, #fff 0 3px, transparent 4px),
+      radial-gradient(circle at 52% 56%, #fff 0 3px, transparent 4px),
+      radial-gradient(circle at 74% 80%, var(--accent) 0 3.4px, transparent 4.4px);
+  }
+  .tag{color:var(--ink-2);font-weight:600;font-size:12.5px;border:1px solid var(--line);background:#fff;padding:3px 9px;border-radius:999px}
+
+  .hero{padding:40px 0 14px;display:grid;gap:18px;max-width:760px}
+  h1{font-size:clamp(30px,5.2vw,46px);line-height:1.05;letter-spacing:-.025em;margin:0;font-weight:850}
+  h1 .hl{color:var(--brand)}
+  .sub{font-size:clamp(16px,2.4vw,19px);color:var(--ink-2);margin:0;max-width:640px}
+  .stat-row{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:2px;color:var(--ink-2);font-size:14px}
+  .stat-row b{color:var(--ink)}
+
+  .grid{display:grid;grid-template-columns:1fr;gap:22px;margin:26px 0 8px}
+  @media(min-width:900px){.grid{grid-template-columns:0.92fr 1.08fr}}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .card .pad{padding:22px}
+  .card h2{margin:0 0 4px;font-size:18px;letter-spacing:-.01em}
+  .card .hint{margin:0 0 16px;color:var(--ink-2);font-size:13.5px}
+
+  form{display:grid;gap:14px}
+  .field{display:grid;gap:6px}
+  .row2{display:grid;gap:14px}
+  @media(min-width:520px){.row2{grid-template-columns:1fr 1fr}}
+  label{font-size:13px;font-weight:700;color:var(--ink-2)}
+  label .req{color:var(--accent-ink)}
+  input,select{
+    width:100%;font:inherit;color:var(--ink);background:#fff;
+    border:1px solid var(--line);border-radius:10px;padding:11px 12px;outline:none;transition:border-color .12s,box-shadow .12s
+  }
+  input:focus,select:focus{border-color:var(--brand-2);box-shadow:0 0 0 3px rgba(18,86,143,.14)}
+  .cta{
+    appearance:none;border:0;cursor:pointer;font:inherit;font-weight:800;letter-spacing:.01em;
+    color:#fff;background:linear-gradient(180deg,#f4711f 0%,#e2640f 100%);
+    padding:14px 18px;border-radius:11px;font-size:16px;box-shadow:0 8px 18px rgba(226,100,15,.28);
+    transition:transform .06s ease, box-shadow .12s ease
+  }
+  .cta:hover{box-shadow:0 10px 22px rgba(226,100,15,.34)}
+  .cta:active{transform:translateY(1px)}
+  .mini{font-size:12.5px;color:var(--ink-2);text-align:center}
+
+  /* results */
+  #out{display:none}
+  #out.show{display:block}
+  .out-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;margin-bottom:14px}
+  .out-head h2{margin:0}
+  .out-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{
+    appearance:none;cursor:pointer;font:inherit;font-weight:700;font-size:13px;
+    background:#fff;color:var(--brand);border:1px solid var(--line);border-radius:9px;padding:8px 12px;transition:background .12s,border-color .12s
+  }
+  .btn:hover{background:#f4f7fb;border-color:#cfd9e4}
+  .btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .btn.primary:hover{background:var(--brand-2)}
+
+  .touch{border:1px solid var(--line);border-radius:12px;padding:14px 14px 12px;margin-bottom:12px;background:#fffdfb}
+  .touch .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+  .pill{font-size:11.5px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;padding:3px 8px;border-radius:999px}
+  .pill.sms{background:#e7f1ff;color:#0b4a8a}
+  .pill.email{background:#fdeede;color:var(--accent-ink)}
+  .when{font-weight:800;font-size:14px}
+  .when .rel{color:var(--ink-2);font-weight:600}
+  .touch .goal{margin-left:auto;font-size:12.5px;color:var(--ink-2)}
+  .subj{font-size:13px;color:var(--ink-2);margin:0 0 6px}
+  .subj b{color:var(--ink)}
+  .msg{
+    white-space:pre-wrap;font-size:14.5px;background:#fff;border:1px dashed var(--line);
+    border-radius:9px;padding:11px 12px;color:var(--ink)
+  }
+  .touch .foot{display:flex;justify-content:flex-end;margin-top:9px}
+  .copyok{color:var(--ok);font-weight:700;font-size:12.5px;align-self:center;margin-right:auto;display:none}
+  .copyok.show{display:inline}
+
+  /* early access */
+  .ea{margin-top:22px}
+  .ea .pad{display:grid;gap:12px}
+  .ea h2{font-size:17px;margin:0}
+  .ea p{margin:0;color:var(--ink-2);font-size:14px}
+  .ea form{grid-template-columns:1fr auto;gap:10px}
+  @media(max-width:520px){.ea form{grid-template-columns:1fr}}
+  .ea .done{display:none;color:var(--ok);font-weight:700}
+  .ea .done.show{display:block}
+
+  .how{display:grid;gap:12px;grid-template-columns:1fr;margin:30px 0 8px}
+  @media(min-width:720px){.how{grid-template-columns:repeat(3,1fr)}}
+  .how .step{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
+  .how .n{font-weight:850;color:var(--brand);font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+  .how h3{margin:6px 0 4px;font-size:15.5px}
+  .how p{margin:0;color:var(--ink-2);font-size:13.5px}
+
+  footer{margin:34px 0 30px;color:var(--ink-2);font-size:13px;border-top:1px solid var(--line);padding-top:16px;display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:space-between}
+  .note{font-size:12px}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+    <div class="brand"><span class="logo" aria-hidden="true"></span> QuoteLoop</div>
+    <span class="tag">Free tool · early access</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>Never let an estimate <span class="hl">go cold.</span></h1>
+    <p class="sub">You quote the job, then get busy on the next one — and a ready-to-win customer quietly hires someone else. QuoteLoop turns one estimate into a scheduled follow-up sequence you can send in seconds. Built for the one-person shop.</p>
+    <div class="stat-row">
+      <span>⏱ <b>Under 60 seconds</b> per estimate</span>
+      <span>📲 <b>SMS + email</b> drafts, ready to send</span>
+      <span>🗓 <b>Calendar reminders</b> included</span>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <div class="pad">
+        <h2>Enter the estimate</h2>
+        <p class="hint">Nothing is uploaded — everything runs in your browser.</p>
+        <form id="genForm" autocomplete="off">
+          <div class="field">
+            <label for="cust">Customer name <span class="req">*</span></label>
+            <input id="cust" name="cust" placeholder="e.g. Dana Whitlock" required />
+          </div>
+          <div class="field">
+            <label for="job">Job / work quoted <span class="req">*</span></label>
+            <input id="job" name="job" placeholder="e.g. kitchen faucet + under-sink repair" required />
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label for="value">Quote amount</label>
+              <input id="value" name="value" inputmode="decimal" placeholder="e.g. 2400" />
+            </div>
+            <div class="field">
+              <label for="date">Estimate sent on <span class="req">*</span></label>
+              <input id="date" name="date" type="date" required />
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label for="biz">Your business name</label>
+              <input id="biz" name="biz" placeholder="e.g. Whitlock Plumbing" />
+            </div>
+            <div class="field">
+              <label for="you">Your name</label>
+              <input id="you" name="you" placeholder="e.g. Sam" />
+            </div>
+          </div>
+          <button class="cta" type="submit">Generate my follow-up sequence →</button>
+          <p class="mini">No sign-up. No card. Your details never leave this page.</p>
+        </form>
+      </div>
+    </div>
+
+    <div class="card" id="outCard">
+      <div class="pad">
+        <div id="empty">
+          <h2>Your sequence appears here</h2>
+          <p class="hint">A proven 5-touch cadence — spaced so you stay top-of-mind without being a pest: <b>day 1, day 3, day 7, day 14, day 30</b>. Each message is pre-written and dated. Tweak, copy, and send from your own phone or email.</p>
+          <div class="how" style="margin-top:6px">
+            <div class="step"><div class="n">01</div><h3>Enter once</h3><p>Customer, the job, and the date you quoted it.</p></div>
+            <div class="step"><div class="n">02</div><h3>Get the cadence</h3><p>Five dated, ready-to-send touches across SMS &amp; email.</p></div>
+            <div class="step"><div class="n">03</div><h3>Send &amp; book</h3><p>Copy each one, or load all five as calendar reminders.</p></div>
+          </div>
+        </div>
+
+        <div id="out" aria-live="polite">
+          <div class="out-head">
+            <h2>Follow-up sequence</h2>
+            <div class="out-actions">
+              <button class="btn" id="copyAll" type="button">Copy all</button>
+              <button class="btn primary" id="ics" type="button">Add reminders (.ics)</button>
+            </div>
+          </div>
+          <div id="touches"></div>
+          <p class="note">These are drafts for you to review and send yourself. QuoteLoop doesn't message your customers automatically — you stay in control of every send.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card ea" id="earlyAccess">
+    <div class="pad">
+      <h2>Want the sequence to send itself?</h2>
+      <p>The next version schedules and sends each touch for you — and stops the moment a customer replies. We're onboarding solo trades now. Leave an email and we'll reach out when your spot opens.</p>
+      <form id="eaForm" autocomplete="off">
+        <input id="eaEmail" type="email" placeholder="you@yourbusiness.com" aria-label="Your email" required />
+        <button class="cta" type="submit" style="white-space:nowrap">Get early access</button>
+      </form>
+      <div class="done" id="eaDone">✓ You're on the list. We'll be in touch — no spam, ever.</div>
+      <p class="note">We'll only use your email to talk to you about QuoteLoop early access.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>QuoteLoop · a follow-up tool for solo home-service pros</span>
+    <span class="note">Early MVP — built to test whether this saves you jobs. No guarantees, no fine print.</span>
+  </footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+
+  // Cadence: [dayOffset, channel, short goal]
+  var CADENCE = [
+    [1,  "sms",   "Confirm + stay warm"],
+    [3,  "email", "Recap value, invite questions"],
+    [7,  "sms",   "Light nudge on timing"],
+    [14, "email", "Offer to revisit scope/price"],
+    [30, "sms",   "Final friendly check-in"]
+  ];
+
+  var DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  var MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  function addDays(d, n){ var x = new Date(d.getTime()); x.setDate(x.getDate()+n); return x; }
+  function fmtDate(d){ return DOW[d.getDay()]+", "+MON[d.getMonth()]+" "+d.getDate(); }
+  function rel(n){ return n===1 ? "tomorrow" : ("day "+n); }
+
+  function money(raw){
+    if(!raw) return "";
+    var num = parseFloat(String(raw).replace(/[^0-9.]/g,""));
+    if(isNaN(num) || num<=0) return "";
+    return "$"+num.toLocaleString("en-US",{maximumFractionDigits: num%1?2:0});
+  }
+
+  function firstName(full){
+    if(!full) return "there";
+    return String(full).trim().split(/\s+/)[0];
+  }
+
+  // Build the five messages. Honest, professional, no false claims.
+  function messages(ctx){
+    var n = ctx.first, job = ctx.job, val = ctx.value, biz = ctx.biz, you = ctx.you;
+    var sign = you ? you : (biz || "Us");
+    var fromBiz = biz ? (" at "+biz) : "";
+    var valClause = val ? (" ("+val+")") : "";
+    var valLine = val ? ("the "+val+" estimate") : "your estimate";
+
+    return [
+      { // day 1 SMS
+        subject: null,
+        body: "Hi "+n+", it's "+sign+fromBiz+". Thanks again for the chance to quote your "+job+" — just confirming you got "+valLine+". Any questions, text me right back and I'll sort it out. No rush either way."
+      },
+      { // day 3 email
+        subject: "Your "+job+" quote — anything I can clarify?",
+        body: "Hi "+n+",\n\nFollowing up on the estimate I sent for your "+job+valClause+". I wanted to make sure it landed and see if anything needs explaining — scope, timing, or how the pricing breaks down.\n\nHappy to walk through it on a quick call or adjust the plan to fit your budget. Just reply and let me know what works.\n\nThanks,\n"+sign+(biz?("\n"+biz):"")
+      },
+      { // day 7 SMS
+        subject: null,
+        body: "Hi "+n+", "+sign+" here — checking in on the "+job+" quote. Is now a good time to get it on the schedule, or should I follow up a little later? Totally fine either way, just don't want it to slip through."
+      },
+      { // day 14 email
+        subject: "Still keen on the "+job+"? Happy to adjust",
+        body: "Hi "+n+",\n\nNo worries if the timing isn't right yet for the "+job+". If the estimate"+valClause+" was more than you'd planned, tell me what you had in mind — there's often a way to phase the work or trim the scope so it fits.\n\nMy schedule is filling up over the next few weeks, so if you'd like to lock in a slot, now's a good time. Either way, just let me know.\n\nThanks,\n"+sign+(biz?("\n"+biz):"")
+      },
+      { // day 30 SMS
+        subject: null,
+        body: "Hi "+n+", "+sign+" checking in one last time about the "+job+". If you've gone another direction, no hard feelings at all. If not, I'd still love to help — reply anytime and I'll pick it right back up."
+      }
+    ];
+  }
+
+  var lastBuild = null;
+
+  function build(e){
+    e.preventDefault();
+    var cust = $("cust").value.trim();
+    var job  = $("job").value.trim();
+    var dateStr = $("date").value;
+    if(!cust || !job || !dateStr){ return; }
+
+    // Parse the date as a local date (avoid timezone drift from yyyy-mm-dd).
+    var parts = dateStr.split("-");
+    var base = new Date(parseInt(parts[0],10), parseInt(parts[1],10)-1, parseInt(parts[2],10));
+
+    var ctx = {
+      first: firstName(cust),
+      job: job,
+      value: money($("value").value),
+      biz: $("biz").value.trim(),
+      you: $("you").value.trim()
+    };
+
+    var msgs = messages(ctx);
+    var container = $("touches");
+    container.innerHTML = "";
+    lastBuild = { ctx: ctx, items: [] };
+
+    CADENCE.forEach(function(c, i){
+      var off = c[0], chan = c[1], goal = c[2];
+      var when = addDays(base, off);
+      var m = msgs[i];
+      lastBuild.items.push({ when: when, chan: chan, goal: goal, subject: m.subject, body: m.body });
+
+      var el = document.createElement("div");
+      el.className = "touch";
+
+      var top = document.createElement("div");
+      top.className = "top";
+      top.innerHTML =
+        '<span class="pill '+chan+'">'+(chan==="sms"?"Text":"Email")+'</span>'+
+        '<span class="when">'+fmtDate(when)+' <span class="rel">· '+rel(off)+'</span></span>'+
+        '<span class="goal">'+goal+'</span>';
+      el.appendChild(top);
+
+      if(m.subject){
+        var s = document.createElement("p");
+        s.className = "subj";
+        s.innerHTML = "Subject: <b></b>";
+        s.querySelector("b").textContent = m.subject;
+        el.appendChild(s);
+      }
+
+      var msg = document.createElement("div");
+      msg.className = "msg";
+      msg.textContent = m.body;
+      el.appendChild(msg);
+
+      var foot = document.createElement("div");
+      foot.className = "foot";
+      var ok = document.createElement("span");
+      ok.className = "copyok";
+      ok.textContent = "Copied ✓";
+      var btn = document.createElement("button");
+      btn.className = "btn";
+      btn.type = "button";
+      btn.textContent = m.subject ? "Copy email" : "Copy text";
+      btn.addEventListener("click", function(){
+        var payload = (m.subject ? ("Subject: "+m.subject+"\n\n") : "") + m.body;
+        copy(payload, ok);
+      });
+      foot.appendChild(ok);
+      foot.appendChild(btn);
+      el.appendChild(foot);
+
+      container.appendChild(el);
+    });
+
+    $("empty").style.display = "none";
+    $("out").classList.add("show");
+    $("out").scrollIntoView({behavior:"smooth", block:"nearest"});
+  }
+
+  function copy(text, okEl){
+    var done = function(){
+      if(okEl){ okEl.classList.add("show"); setTimeout(function(){ okEl.classList.remove("show"); }, 1600); }
+    };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, function(){ fallbackCopy(text); done(); });
+    } else { fallbackCopy(text); done(); }
+  }
+  function fallbackCopy(text){
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); }catch(e){}
+    document.body.removeChild(ta);
+  }
+
+  function copyAll(){
+    if(!lastBuild) return;
+    var lines = lastBuild.items.map(function(it){
+      var head = fmtDate(it.when)+"  ·  "+(it.chan==="sms"?"TEXT":"EMAIL")+(it.subject?("  ·  Subject: "+it.subject):"");
+      return head+"\n"+it.body;
+    });
+    copy("Follow-up sequence for "+lastBuild.ctx.first+"\n\n"+lines.join("\n\n----------\n\n"), null);
+    flash($("copyAll"), "Copied ✓");
+  }
+
+  function flash(btn, txt){
+    var old = btn.textContent; btn.textContent = txt;
+    setTimeout(function(){ btn.textContent = old; }, 1500);
+  }
+
+  // .ics with a VEVENT per touch (all-day reminders the operator can act on)
+  function pad(n){ return n<10 ? "0"+n : ""+n; }
+  function icsDate(d){ return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate()); }
+  function icsEscape(s){ return String(s).replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\n/g,"\\n"); }
+
+  function downloadICS(){
+    if(!lastBuild) return;
+    var lines = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//QuoteLoop//Follow-up//EN","CALSCALE:GREGORIAN"];
+    lastBuild.items.forEach(function(it, i){
+      var d = it.when, end = addDays(d,1);
+      var title = "Follow up: "+lastBuild.ctx.first+" — "+lastBuild.ctx.job+" ("+(it.chan==="sms"?"text":"email")+")";
+      var desc = (it.subject?("Subject: "+it.subject+"\n\n"):"")+it.body;
+      var uid = "quoteloop-"+icsDate(d)+"-"+i+"@quoteloop.local";
+      lines.push(
+        "BEGIN:VEVENT",
+        "UID:"+uid,
+        "DTSTART;VALUE=DATE:"+icsDate(d),
+        "DTEND;VALUE=DATE:"+icsDate(end),
+        "SUMMARY:"+icsEscape(title),
+        "DESCRIPTION:"+icsEscape(desc),
+        "BEGIN:VALARM","TRIGGER:PT0S","ACTION:DISPLAY","DESCRIPTION:"+icsEscape(title),"END:VALARM",
+        "END:VEVENT"
+      );
+    });
+    lines.push("END:VCALENDAR");
+    var blob = new Blob([lines.join("\r\n")], {type:"text/calendar"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = "quoteloop-"+lastBuild.ctx.first.toLowerCase()+"-followups.ics";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    flash($("ics"), "Downloaded ✓");
+  }
+
+  // Early-access capture: store locally so nothing is lost, confirm honestly.
+  function earlyAccess(e){
+    e.preventDefault();
+    var email = $("eaEmail").value.trim();
+    if(!email) return;
+    try{
+      var key = "quoteloop_leads";
+      var arr = JSON.parse(localStorage.getItem(key) || "[]");
+      arr.push({ email: email, at: new Date().toISOString() });
+      localStorage.setItem(key, JSON.stringify(arr));
+    }catch(err){ /* private mode — still confirm */ }
+    $("eaForm").style.display = "none";
+    $("eaDone").classList.add("show");
+  }
+
+  // Default the date to today for convenience.
+  function todayStr(){
+    var d = new Date();
+    return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    $("date").value = todayStr();
+    $("genForm").addEventListener("submit", build);
+    $("copyAll").addEventListener("click", copyAll);
+    $("ics").addEventListener("click", downloadICS);
+    $("eaForm").addEventListener("submit", earlyAccess);
+  });
+})();
+</script>
+</body>
+</html>
