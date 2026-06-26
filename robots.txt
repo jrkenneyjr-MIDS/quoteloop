@@ -1,0 +1,8 @@
+# QuoteLoop — https://jrkenneyjr-mids.github.io/quoteloop/
+# Note: this is a GitHub Pages *project* site. The crawler-honored robots.txt for
+# directives lives at the host root (jrkenneyjr-mids.github.io/robots.txt). This file
+# documents intent for the project path and points crawlers to the sitemap.
+User-agent: *
+Allow: /
+
+Sitemap: https://jrkenneyjr-mids.github.io/quoteloop/sitemap.xml
